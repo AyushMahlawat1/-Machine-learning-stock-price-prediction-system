@@ -109,7 +109,7 @@ This project is open-source and available under the MIT License.
 
 ## Contact
 
-For questions or support, please contact \[Your Name] at [your.email@example.com](mailto:your.email@example.com).
+For questions or support, please contact Ayush Mahlawat(ayushmahlawat5@gmail.com)
 
 ```
 
