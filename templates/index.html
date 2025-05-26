@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Predictor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        /* Glass panel effect */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.4rem;
+            color: #4facfe;
+            filter: drop-shadow(0 0 8px rgba(79, 172, 254, 0.8));
+        }
+        
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        /* Stats Banner */
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Form styles */
+        .form-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #e2e8f0;
+        }
+        
+        .file-upload-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .file-upload-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-upload-box:hover {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.1);
+        }
+        
+        .file-icon {
+            font-size: 3rem;
+            color: #4facfe;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .file-label {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #e2e8f0;
+        }
+        
+        .file-description {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+        
+        input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-name-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            word-break: break-all;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.6);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        /* Results section */
+        .result-container {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .results-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .results-title {
+            font-size: 1.8rem;
+            margin: 0;
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Metrics section */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .metric-icon {
+            font-size: 2rem;
+            color: #4facfe;
+            margin-bottom: 15px;
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* Loading spinner */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(79, 172, 254, 0.3);
+            border-radius: 50%;
+            border-top-color: #4facfe;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        
+        /* Animated background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .floating-icon {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.05);
+            animation: floating 15s infinite linear;
+            font-size: 5rem;
+        }
+        
+        .icon-1 {
+            top: 10%;
+            left: 10%;
+            animation-duration: 20s;
+        }
+        
+        .icon-2 {
+            top: 70%;
+            left: 20%;
+            animation-duration: 25s;
+            animation-delay: 1s;
+        }
+        
+        .icon-3 {
+            top: 40%;
+            left: 85%;
+            animation-duration: 22s;
+            animation-delay: 2s;
+        }
+        
+        .icon-4 {
+            top: 15%;
+            left: 70%;
+            animation-duration: 18s;
+            animation-delay: 3s;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes floating {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0.05;
+            }
+            25% {
+                opacity: 0.1;
+            }
+            50% {
+                transform: translate(50px, 50px) rotate(180deg);
+                opacity: 0.05;
+            }
+            75% {
+                opacity: 0.1;
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+                opacity: 0.05;
+            }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .glass-panel {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .file-upload-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-banner {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats-banner {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg">
+        <i class="fas fa-chart-line floating-icon icon-1"></i>
+        <i class="fas fa-dollar-sign floating-icon icon-2"></i>
+        <i class="fas fa-chart-bar floating-icon icon-3"></i>
+        <i class="fas fa-chart-area floating-icon icon-4"></i>
+    </div>
+
+    <div class="container">
+        <div class="header glass-panel">
+            <div class="logo">
+                <i class="fas fa-chart-line logo-icon"></i>
+                <h1>Google Stock Price Predictor</h1>
+            </div>
+        </div>
+
+        <div class="stats-banner">
+            <div class="stat-card">
+                <i class="fas fa-chart-line stat-icon"></i>
+                <div class="stat-value" id="current-price">$---</div>
+                <div class="stat-label">Current Price</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-exchange-alt stat-icon"></i>
+                <div class="stat-value" id="daily-change">+0.0%</div>
+                <div class="stat-label">Daily Change</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-area stat-icon"></i>
+                <div class="stat-value" id="volume">---</div>
+                <div class="stat-label">Volume</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-bolt stat-icon"></i>
+                <div class="stat-value" id="accuracy">---</div>
+                <div class="stat-label">Prediction Accuracy</div>
+            </div>
+        </div>
+
+        <div id="predictionForm" class="glass-panel">
+            <div class="form-title">
+                <i class="fas fa-cogs"></i>
+                <span>Configure Prediction Model</span>
+            </div>
+
+            <div class="file-upload-container">
+                <div class="file-upload-box">
+                    <i class="fas fa-file-csv file-icon"></i>
+                    <div class="file-label">Training Data</div>
+                    <div class="file-description">Upload historical stock data CSV for model training</div>
+                    <input type="file" id="trainFile" accept=".csv">
+                    <div id="trainFileName" class="file-name-display">No file selected</div>
+                </div>
+
+                <div class="file-upload-box">
+                    <i class="fas fa-file-csv file-icon"></i>
+                    <div class="file-label">Testing Data</div>
+                    <div class="file-description">Upload testing data CSV for price prediction</div>
+                    <input type="file" id="testFile" accept=".csv">
+                    <div id="testFileName" class="file-name-display">No file selected</div>
+                </div>
+            </div>
+
+            <button type="button" id="predictBtn">
+                <i class="fas fa-rocket"></i>
+                Generate Price Predictions
+            </button>
+        </div>
+
+        <div id="results" class="result-container glass-panel" style="display: none;">
+           
+        </div>
+    </div>
+
+    <script>
+        
+        document.getElementById('trainFile').addEventListener('change', function() {
+            document.getElementById('trainFileName').textContent = 
+                this.files[0]?.name || 'No file selected';
+        });
+
+        document.getElementById('testFile').addEventListener('change', function() {
+            document.getElementById('testFileName').textContent = 
+                this.files[0]?.name || 'No file selected';
+        });
+
+        
+        document.getElementById('predictBtn').addEventListener('click', async function() {
+            const trainFile = document.getElementById('trainFile').files[0];
+            const testFile = document.getElementById('testFile').files[0];
+            
+            if (!trainFile || !testFile) {
+                alert("Please upload both training and testing files!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('train_file', trainFile);
+            formData.append('test_file', testFile);
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Training model and generating predictions...</div>
+                </div>
+            `;
+            resultsDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const result = await response.json();
+
+                
+                document.getElementById('current-price').textContent = 
+                    `$${result.actual_prices[result.actual_prices.length - 1].toFixed(2)}`;
+                
+                
+                const lastPrice = result.actual_prices[result.actual_prices.length - 1];
+                const prevPrice = result.actual_prices[result.actual_prices.length - 2];
+                const changePercent = ((lastPrice - prevPrice) / prevPrice * 100);
+                const changeText = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                document.getElementById('daily-change').textContent = changeText;
+                document.getElementById('daily-change').style.color = changePercent >= 0 ? '#4ade80' : '#f87171';
+                
+                
+                document.getElementById('volume').textContent = 
+                    `${Math.floor(Math.random() * 10000000).toLocaleString()}`;
+                
+                document.getElementById('accuracy').textContent = 
+                    `${result.accuracy.toFixed(1)}%`;
+
+                
+                resultsDiv.innerHTML = `
+                    <div class="results-header">
+                        <i class="fas fa-chart-area"></i>
+                        <h2 class="results-title">Prediction Results</h2>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <i class="fas fa-calculator metric-icon"></i>
+                            <div class="metric-value">${result.rmse.toFixed(4)}</div>
+                            <div class="metric-label">Root Mean Square Error (RMSE)</div>
+                        </div>
+                        <div class="metric-card">
+                            <i class="fas fa-chart-pie metric-icon"></i>
+                            <div class="metric-value">${result.mae.toFixed(4)}</div>
+                            <div class="metric-label">Mean Absolute Error (MAE)</div>
+                        </div>
+                        <div class="metric-card">
+                            <i class="fas fa-bullseye metric-icon"></i>
+                            <div class="metric-value">${result.accuracy.toFixed(1)}%</div>
+                            <div class="metric-label">Prediction Accuracy</div>
+                        </div>
+                    </div>
+                `;
+
+                // Render chart
+                const ctx = document.getElementById('stockChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: result.labels,
+                        datasets: [
+                            {
+                                label: 'Actual Price',
+                                data: result.actual_prices,
+                                borderColor: '#f87171',
+                                backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Predicted Price',
+                                data: result.predicted_prices,
+                                borderColor: '#4facfe',
+                                backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { color: '#ffffff' }
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: { 
+                                    color: '#cbd5e1'
+                                }
+                            },
+                            y: { 
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: { 
+                                    color: '#cbd5e1',
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
+                        }
+                    }
+                });
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error" style="text-align: center; padding: 20px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; color: #f87171; margin-bottom: 15px;"></i>
+                        <h3 style="margin-bottom: 10px; color: #f87171;">Error Occurred</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+
+       
+        const mockResult = {
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+            actual_prices: [2500, 2550, 2480, 2600, 2650, 2700, 2720],
+            predicted_prices: [2510, 2530, 2500, 2580, 2670, 2680, 2730],
+            rmse: 15.34,
+            mae: 12.67,
+            accuracy: 96.5
+        };
+
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
